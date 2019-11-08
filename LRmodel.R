@@ -12,6 +12,8 @@ logpost = function(beta_curr, Y, X, c) {
   t(X %*% beta_curr) %*% Y - sum(log(1 + exp(X %*% beta_curr))) - .5/c * crossprod(beta_curr)
 }
 
+# obtain posterior draws from beta
+
 bayesLR = function(Y, X, nIter, c, lsig) {
   
   p = dim(X)[2] # number of beta parameters
