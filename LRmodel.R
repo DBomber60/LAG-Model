@@ -1,25 +1,14 @@
-a = c(1)
-
-rm(list=ls())
-set.seed(1)
-
-# let's simulate some data - two coefficients
-nobs = 200
-X = matrix(rnorm(nobs * 2), nrow = nobs, ncol = 2)
-beta_true = c(1,2)
-Y = rbinom(nobs, 1, prob = plogis(X %*% beta_true) )
-
-# prior parameters
-mu_0 = c(0,0)
-c = 1
+# bayesian logistic regression with multivariate normal prior or beta parameters
+# Beta ~ N(mu_0, sigma); mu_0 set to 0 vector here; sigma is a scaled identity matrix
 
 
-# test by fitting traditional logistic regression
-m0 = glm(Y ~ X, family = binomial)
-summary(m0)
+# logpost computes the log of the posterior density of beta vector
+# input: current beta value/ binary response vector (Y)/ real data matrix (X)/ scaling factor on 
+# prior Sigma matrix (c)
+# output: log of the posterior density of beta given data
 
-logpost = function(beta_curr, dat) {
-  t(X %*% beta_curr) %*% dat - sum(log(1 + exp(X %*% beta_curr))) - .5/c * crossprod(beta_curr)
+logpost = function(beta_curr, Y, X, c) {
+  t(X %*% beta_curr) %*% Y - sum(log(1 + exp(X %*% beta_curr))) - .5/c * crossprod(beta_curr)
 }
 
 # simulate from multivariate normal
@@ -49,6 +38,25 @@ for (k in 1:nIter) {
 }
 Output = Res[2001:nIter,]
 hist(Output[,2])
+
+
+# test above with simulated data - two coefficients
+set.seed(1)
+nobs = 200
+X = matrix(rnorm(nobs * 2), nrow = nobs, ncol = 2)
+beta_true = c(1,2)
+Y = rbinom(nobs, 1, prob = plogis(X %*% beta_true) )
+
+# prior parameters
+mu_0 = c(0,0)
+c = 1
+
+
+# test by fitting traditional logistic regression
+m0 = glm(Y ~ X, family = binomial)
+summary(m0)
+
+
 
 
 # sim from MVN
