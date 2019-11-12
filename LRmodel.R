@@ -13,8 +13,15 @@ logpostLR = function(beta_curr, Y, X, c) {
 }
 
 
-#logpostCOX = function(beta_curr, )
+# logposterior for cox prop hazards model
+# data: S, C (clique set), k, current beta value, cn (clique number of current graph)
 
+# beta_curr = rnorm(n)
+
+logpostCOX = function(beta_curr, S, k, cn, Design) {
+  denom = log (sum ( exp(Design %*% c(1:cn, beta_curr) ) ) )
+  return ( sum (S %*% c(1:cn, beta_curr) - k * denom) )
+}
 
 
 
@@ -45,6 +52,36 @@ rw_mh = function(Y, X, nIter, c, lsig, logposterior) {
   }
   return(Res)
 }
+
+# random walk metropolis hastings algorithm - multivariate normal proposal distribution
+# input: logposterior - function that computes the log posterior density
+
+rw_mh_COX = function(S, k, cn, Design, nIter, lsig) {
+  
+  p = n #dim(X)[2] # number of beta parameters
+  
+  # initialize parameters
+  beta_curr = rep(0, p) 
+  logpi_curr = logpostCOX(beta_curr, S, k, cn, Design)
+  
+  # keep track of results here
+  Res = array(NA, dim = c(nIter, p))
+  
+  for (j in 1:nIter) {
+    beta_prop = beta_curr + exp(lsig) * rnorm(p) # propose new beta vector from normal distribution
+    logpi_prop = logpostCOX(beta_curr, S, k, cn, Design)
+    acc = min(1, exp(logpi_prop - logpi_curr) )
+    if (runif(1) < acc) {
+      # set beta to the proposed beta
+      beta_curr = beta_prop
+      logpi_curr = logpi_prop
+    }
+    Res[j,] = beta_curr
+  }
+  return(Res)
+}
+
+
 
 # test above with simulated data - two coefficients
 # set.seed(1)

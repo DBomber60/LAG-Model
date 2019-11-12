@@ -29,6 +29,17 @@ sampled = lag_sample(G=g, C=C, cn=cn, nt=nt, theta=theta, gamma = gamma, beta = 
 
 
 ######### BETA SAMPLES ############
+beta_curr = rnorm(n)
+
+logpostCOX(beta_curr, S = sampled$S, k = sampled$k, cn, sampled$Design)
+
+# MCMC sampler for gamma samples
+nIter = 100000
+reg = rw_mh_COX(S = sampled$S, k = sampled$k, cn = cn, Design = sampled$Design, nIter=nIter, lsig = -4)
+output = reg[10000:nIter,]
+hist(output[,which.max(beta_true)])
+beta_true[which.max(beta_true)]
+
 
 
 
