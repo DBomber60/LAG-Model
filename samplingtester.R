@@ -1,28 +1,38 @@
 source('LRmodel.R')
+source('drivers.R')
+source('rewens.R')
 
+set.seed(1) # for reproducibility
 library(igraph)
 library(tidyverse)
 library(rlist)
 
-n = 50 # 30 items
-gamma = rnorm(n, -1)
+# set parameters
 
-g_sample = function(n, gamma) {
-  edges <- c()
-  for (i in 1:(n - 1)) { #    for each
-    for (j in (i + 1):n) { # vertex pair
-      if (rbinom(1, 1, plogis(gamma[i] + gamma[j])) == 1)
-        edges <- c(edges, i, j)
-    }
-  }
-  g1 <- make_empty_graph(n, directed = FALSE) %>% add_edges(edges)
-  #chordalg1 = is_chordal(g1, fillin = T, newgraph = T)$newgraph
-  #g3 = chordalg2$newgraph # ghat
-  return(g1)
-}
+# PARAMETERS
+n = 20 # items
+nt = 500 # transactions
+gamma <- rnorm(n, -1.5) # graph vertex coefficients
+theta=.2
 
-# sample a graph
-g = g_sample(n, gamma)
+#################### SAMPLE FROM MODEL/ ESTIMATE GRAPH/ GAMMA #########################
+
+g <- g_sample(n, gamma)
+# generate design matrix for sampling cliques
+C <- lapply(cliques(g), as.vector) # quick check: `table(sapply(C, length))`
+cn <- max(sapply(C, length)) - 1 # clique number of `g` (minus 1)
+
+# parameters
+alpha <- (1:cn) # cardinality coefficients 
+beta_true <- rnorm(n) # item (vertex) coefficients
+sampled = lag_sample(G=g, C=C, cn=cn, nt=nt, theta=theta, gamma = gamma, beta = beta_true, alpha = alpha) 
+
+
+######### BETA SAMPLES ############
+
+
+
+######### GAMMA SAMPLES ############
 
 # build design matrix/ response vector based on graph
 design = array(0, dim = c(choose(n,2),n))
@@ -38,12 +48,13 @@ for (i in 1:(n-1)) {
   }
 }
 
+# MCMC sampler for gamma samples
 nIter = 10000
-reg = bayesLR(Y, X = design, nIter, c = 1, lsig = -3)
-
+reg = rw_mh(Y, X = design, nIter, c = 1, lsig = -3, logposterior = logpostLR)
 output = reg[2000:nIter,]
-
 hist(output[,which.max(gamma)])
+# summary(glm(Y ~ design - 1, family = binomial)) # frequentist check
 
-summary(glm(Y ~ design - 1, family = binomial))
+
+
 
