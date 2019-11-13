@@ -67,5 +67,11 @@ hist(output[,which.max(gamma)])
 # summary(glm(Y ~ design - 1, family = binomial)) # frequentist check
 
 
+######### THETA SAMPLES ############
+nIter = 10000
+reg = rw_mh_EWEN(sampled$k, nIter, lsig = -4)
+output = reg[1000:nIter,]
+hist(output)
+
 
 

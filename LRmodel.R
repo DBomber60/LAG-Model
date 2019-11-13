@@ -14,13 +14,46 @@ logpostLR = function(beta_curr, Y, X, c) {
 
 
 # logposterior for cox prop hazards model
-# data: S, C (clique set), k, current beta value, cn (clique number of current graph)
-
-# beta_curr = rnorm(n)
+# input: data{ S, C (clique set), k, current beta value, cn (clique number of current graph) }
+#        and current beta estimate
+# output: log posterior of the cox PH density function
 
 logpostCOX = function(beta_curr, S, k, cn, Design) {
   denom = log (sum ( exp(Design %*% c(1:cn, beta_curr) ) ) )
   return ( sum (S %*% c(1:cn, beta_curr) - k * denom) )
+}
+
+# log posterior for ewens theta estimate
+# input: current theta value/ k (data)
+
+logpostEWEN = function(tc, k) {
+  sum (k * log(tc) - sum ( log (tc + seq(0,n-1)) ) )
+}
+
+# random walk metropolis hastings algorithm - uniform proposal distribution
+# input: logposterior - function that computes the log posterior density
+
+rw_mh_EWEN = function(k, nIter, lsig) {
+  
+  # initialize parameters
+  theta_curr = 0.1 
+  logpi_curr = logpostEWEN(theta_curr, k)
+  
+  # keep track of results here
+  Res = array(NA, dim = c(nIter, 1))
+  
+  for (z in 1:nIter) {
+    theta_prop = theta_curr + runif(1, min = - exp(lsig) * 1, max = exp(lsig) * 1) # propose new theta using uniform distribution
+    logpi_prop = logpostEWEN(theta_prop, k)
+    acc = min(1, exp(logpi_prop - logpi_curr) )
+    if (runif(1) < acc) {
+      # set beta to the proposed beta
+      theta_curr = theta_prop
+      logpi_curr = logpi_prop
+    }
+    Res[z,] = theta_curr
+  }
+  return(Res)
 }
 
 
@@ -101,5 +134,5 @@ rw_mh_COX = function(S, k, cn, Design, nIter, lsig) {
 
 
 # test by fitting traditional logistic regression
-m0 = glm(Y ~ X, family = binomial)
+# m0 = glm(Y ~ X, family = binomial)
 #summary(m0)
