@@ -25,21 +25,23 @@ cn <- max(sapply(C, length)) - 1 # clique number of `g` (minus 1)
 # parameters
 alpha <- (1:cn) # cardinality coefficients 
 beta_true <- rnorm(n) # item (vertex) coefficients
+
+# sample from model
 sampled = lag_sample(G=g, C=C, cn=cn, nt=nt, theta=theta, gamma = gamma, beta = beta_true, alpha = alpha) 
 
+par(mfrow = c(1,3))
 
 ######### BETA SAMPLES ############
 beta_curr = rnorm(n)
 
-logpostCOX(beta_curr, S = sampled$S, k = sampled$k, cn, sampled$Design)
+#logpostCOX(beta_curr, S = sampled$S, k = sampled$k, cn, sampled$Design)
 
-# MCMC sampler for gamma samples
+# MCMC sampler for beta samples
 nIter = 100000
 reg = rw_mh_COX(S = sampled$S, k = sampled$k, cn = cn, Design = sampled$Design, nIter=nIter, lsig = -4)
-output = reg[10000:nIter,]
-hist(output[,which.max(beta_true)])
-beta_true[which.max(beta_true)]
-
+output = reg[2000:nIter,]
+hist(output[,which.max(beta_true)], xlab = "Beta", main = "Posterior Beta Samples")
+abline(v=beta_true[which.max(beta_true)], col=c("red"), lty=c(2), lwd=c(3))
 
 
 
@@ -60,18 +62,23 @@ for (i in 1:(n-1)) {
 }
 
 # MCMC sampler for gamma samples
-nIter = 10000
+nIter = 100000
 reg = rw_mh(Y, X = design, nIter, c = 1, lsig = -3, logposterior = logpostLR)
 output = reg[2000:nIter,]
-hist(output[,which.max(gamma)])
-# summary(glm(Y ~ design - 1, family = binomial)) # frequentist check
+hist(output[,which.max(gamma)], xlab = "Gamma", main = "Posterior Gamma Sample")
+
+abline(v=.7, col=c("red"), lty=c(2), lwd=c(3))
+
+#summary(glm(Y ~ design - 1, family = binomial)) # frequentist check
 
 
 ######### THETA SAMPLES ############
 nIter = 10000
 reg = rw_mh_EWEN(sampled$k, nIter, lsig = -4)
-output = reg[1000:nIter,]
-hist(output)
+output = reg[2000:nIter,]
+hist(output, xlab = "Theta", main = "Posterior Theta Sample")
+
+abline(v=theta, col=c("red"), lty=c(2), lwd=c(3))
 
 
 
