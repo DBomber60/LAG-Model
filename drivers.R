@@ -456,13 +456,20 @@ sK_update = function(D,S,k,edge_change,g,added,cn) {
   
   # if no transactions are impacted, return current S,k
   if (length(impacted) > 0) {
+    print(paste(c(edge_change, length(impacted))))
     if (added==1) {g4=add_edges(g,edge_change)} else {g4 = g - E(g,edge_change)}
     
     # get clique number of new graph
     Cl <- lapply(cliques(g4), as.vector) # quick check: `table(sapply(C, length))`
     cn_g4 <- max(sapply(Cl, length)) - 1 # clique number of `g` (minus 1)
     
+    # if the new clique number is greater than the old clique number, the S matrix needs to expand
+    # in particular, add 0 columns
     if(cn_g4 > cn) {S_new = cbind(S[,1:cn],matrix(0, nrow = dim(S)[1], ncol = (cn_g4 - cn)),S[,(cn+1):dim(S)[2] ])}
+    
+    # if the new clique number is LOWER than the old clique number, the S matrix needs to contract
+    if(cn_g4 < cn) {S_new = cbind(S[,1:cn_g4],S[,(cn+1):dim(S)[2] ])}
+    
     
     kS_new = kestimate(g4,D[impacted,],cn_g4)
     

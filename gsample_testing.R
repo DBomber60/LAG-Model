@@ -1,6 +1,5 @@
-setwd("~/Documents/LAG Model")
-source('functions3.R')
-source('~/Documents/LAG Model/sample/graphsample.R')
+source('drivers.R')
+source('graphsample.R')
 source('rewens.R')
 library(igraph)
 library(tidyverse)
@@ -32,7 +31,6 @@ M = t(sampled$D) %*% sampled$D
 ghat = g_estimate(sampled$D, M=M, nt = nt)
 kshat = kestimate(ghat$graph, sampled$D, cn = ghat$cn)
 
-
 # graph sampling procedure
 currentg = ghat$graph
 cn = ghat$cn
@@ -42,9 +40,14 @@ cn = ghat$cn
 changed = list()
 
 
-for (j in 1:10) {
+for (j in 1:200) {
   # sample graph from chordal neighbors
   nbd = graph_sample(currentg, kshat = kshat, n, cn, beta = beta_true)
+  
+  # data frame for checking - can comment out
+  datcheck = data.frame(nbd$kdiff, nbd$samplep, nbd$acceptance)
+  
+  # subtract the median sampling probability to prevent computational underflow
   sampledg = sample.int(length(nbd$samplep), 1, prob = exp(nbd$samplep - median(nbd$samplep)))
   a = nbd$acceptance[sampledg] # acceptance function
   # if we accept the new sampled graph ...
@@ -55,7 +58,7 @@ for (j in 1:10) {
     } else {newg = currentg - E(currentg,nbd$edge_change[[sampledg]])}
     
     # keep track of the changes made
-    changed = list.append(changed, c(nbd$edge_change[[sampledg]], nbd$added[sampledg]))
+    changed = list.append(changed, c(nbd$edge_change[[sampledg]], nbd$added[sampledg], j))
     
     # update parameters
     ksupdate = sK_update(D = sampled$D, S=kshat$S, k=kshat$k, nbd$edge_change[[sampledg]], 

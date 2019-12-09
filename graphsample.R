@@ -1,11 +1,10 @@
-setwd("~/Documents/LAG Model")
-source('functions3.R')
+source('drivers.R')
 source('rewens.R')
 library(igraph)
 library(tidyverse)
 library(rlist)
 
-# input: graph/ kshat (list with k_est and S)
+# input: graph/ kshat (list with k and S estimates)
 # output: sampling probability of each possible edge change (neighboring chordal graphs)
 
 graph_sample = function(gr_current, kshat, n, cn, beta) {
@@ -21,6 +20,7 @@ graph_sample = function(gr_current, kshat, n, cn, beta) {
   # acceptance function for each chordal neighbor
   samplep = array(0, dim = length(neighbors$edge_perturb))
   acceptance = array(0, dim = length(neighbors$edge_perturb))
+  kdiff = array(NA, dim = length(neighbors$edge_perturb))
   
   # for each chordal neighbor, compute sampling probability and acceptance probability
   for (m in seq_along(neighbors$edge_perturb)) {
@@ -28,7 +28,7 @@ graph_sample = function(gr_current, kshat, n, cn, beta) {
     added = neighbors$added[m] # binary variable
     edge_change = neighbors$edge_perturb[[m]] # which edge is added/ deleted
     ks_temp = sK_update(D = sampled$D, S=kshat$S, k=kshat$k, edge_change, g = gr_current, added, cn = cn)
-    #kdiff[m] = sum(ks_temp$k - kshat$k_est)
+    kdiff[m] = sum(ks_temp$k - kshat$k_est)
     if(added==1) {gnew=add_edges(gr_current, edge_change)} else {gnew = gr_current - E(gr_current,edge_change)}
     
     # new design matrix
@@ -43,8 +43,10 @@ graph_sample = function(gr_current, kshat, n, cn, beta) {
     samplep[m] = -sum(ks_temp$k)*f # log (J(G^{t+1} | J(G^{t})))
     acceptance[m] = exp(sum( (ks_temp$k - kshat$k) * log(theta)  + ks_temp$S %*% c(1:cntemp,beta_true) - kshat$S %*% c(1:cn,beta_true)) )
   }
-  return(list(samplep=samplep, acceptance=acceptance, edge_change = neighbors$edge_perturb, added = neighbors$added))
+  return(list(samplep=samplep, kdiff = kdiff, acceptance=acceptance, edge_change = neighbors$edge_perturb, added = neighbors$added))
 }
+
+
 
 # testing
 a = c(-10, -20, -30)
