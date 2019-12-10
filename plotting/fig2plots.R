@@ -1,15 +1,17 @@
-#setwd("~/Documents/LAG Model")
 library(ggplot2)
 library(tidyr)
 library(latex2exp)
 library(dplyr)
 library(gridExtra)
+library(ggplotify)
 
 ####### Boxplots comparing model accuracy
 
-graphest = read.csv('graphest.csv')
-otherest = read.csv('consdat2.csv')
-newdist = read.csv('newdist2.csv')
+graphest = read.csv('./data/graphest.csv')
+otherest = read.csv('./data/consdat2.csv')
+newdist = read.csv('./data/newdist2.csv')
+gsample = read.csv('./data/gsample.csv')
+
 otherest = otherest[,-1]
 graphest = graphest[,-1]
 newdist = newdist[,-1]
@@ -24,11 +26,11 @@ longdat = rbind(long_nd, long_ge)
 
 p11 = ggplot(filter(longdat, type=="sparse"), aes(x=parameter, y=estimate)) + 
   geom_boxplot() + ylim(0,1) + theme_bw() + ylab("Similarity/ Correlation") + xlab("") + 
-  scale_x_discrete(labels=c('jaccard'="Jaccard index", "spear" = "Spearman Corr.")) + 
+  scale_x_discrete(labels=c('jaccard'="Jaccard", "Match Similarity"="Match", "spear" = "Spearman")) + 
   ggtitle("Graph Similarity - Sparse") + theme(plot.title = element_text(size = 11))
 p12 = ggplot(filter(longdat, type=="dense"), aes(x=parameter, y=estimate)) + 
   geom_boxplot() + ylim(0,1) + theme_bw() + ylab("") + xlab("") + 
-  scale_x_discrete(labels=c('jaccard'="Jaccard Index", "spear" = "Spearman Corr.")) + 
+  scale_x_discrete(labels=c('jaccard'="Jaccard", "Match Similarity"="Match", "spear" = "Spearman")) + 
   ggtitle("Graph Similarity - Dense")+ theme(plot.title = element_text(size = 11))
 
 
@@ -42,9 +44,20 @@ p22 = ggplot(filter(long_oe,type=="dense"), aes(x=parameter, y=estimate)) + geom
   ylim(0,2.5) + ylab("") + theme_bw() + xlab("") + 
   ggtitle("Estimation Error - Dense")+ theme(plot.title = element_text(size = 11))
 
-g=arrangeGrob(p11,p12, p21, p22, nrow=2, ncol=2)
 
-ggsave("this.pdf",g)
+
+################ GRAPH TRACE PLOTS #######################
+
+
+g1 = ggplot() + geom_step(data = gsample, mapping = aes(x = iter, y = fpa)) + 
+  geom_step(data = gsample, mapping = aes(x = iter, y = fna)) + theme_bw() + 
+  ggtitle("Graph Trace Plot")
+
+
+
+g=arrangeGrob(p11,p12,g1, p21, p22, g1, nrow=2, ncol=3)
+
+ggsave("this2.pdf",g)
 
 
 

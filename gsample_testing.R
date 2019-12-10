@@ -6,13 +6,14 @@ library(igraph)
 library(tidyverse)
 library(rlist)
 
+
 # toy example - generate a sample from a small set of items
 # compute likelihood values of neighboring graphs
 set.seed(1)
 # PARAMETERS
 n = 20 # items
 nt = 500 # transactions
-gamma <- rnorm(n, -1) # graph vertex coefficients
+gamma <- rnorm(n, -1.5) # graph vertex coefficients
 theta=.2
 
 #################### SAMPLE FROM MODEL/ ESTIMATE GRAPH/ GAMMA #########################
@@ -86,7 +87,7 @@ for (j in 1:10) {
 # in gsample_testing.R. gamma <- rnorm(n, -2)
 
 #saveRDS(changed, file = "traceG.RData")
-#chgl.1 = readRDS("traceG.12.9.8pm.RData")
+chglist = readRDS("data/traceG.12.9.8pm.RData")
 
 # key inputs: true graph/ initial graph estimate
 trueg = g
@@ -103,7 +104,11 @@ x = matdat[,4]
 y1 = fpfa$fpa # false positive array
 y2 = fpfa$fna # false negative array
 
-graphplot(matdat[,4], y1, y2)
+df = data.frame(iter = c(0,x), fpa = y1, fna = y2)
+
+write.csv(df, "gsample.csv")
+
+
 
 
 

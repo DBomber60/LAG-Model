@@ -99,6 +99,5 @@ graphplot = function(iters, fpa, fna) {
        xlab = "Iteration", ylab = "Edge Count")
   plot(fn2, add = T, do.points = F, lty = 3, lwd = 4, col = colors[2])
 
-
 }
 
