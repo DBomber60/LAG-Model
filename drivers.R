@@ -456,7 +456,7 @@ sK_update = function(D,S,k,edge_change,g,added,cn) {
   
   # if no transactions are impacted, return current S,k
   if (length(impacted) > 0) {
-    print(paste(c(edge_change, length(impacted))))
+    #print(paste(c(edge_change, length(impacted))))
     if (added==1) {g4=add_edges(g,edge_change)} else {g4 = g - E(g,edge_change)}
     
     # get clique number of new graph

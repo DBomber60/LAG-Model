@@ -24,7 +24,7 @@ graph_sample = function(gr_current, kshat, n, cn, beta) {
   
   # for each chordal neighbor, compute sampling probability and acceptance probability
   for (m in seq_along(neighbors$edge_perturb)) {
-    print(m)
+    #print(m)
     added = neighbors$added[m] # binary variable
     edge_change = neighbors$edge_perturb[[m]] # which edge is added/ deleted
     ks_temp = sK_update(D = sampled$D, S=kshat$S, k=kshat$k, edge_change, g = gr_current, added, cn = cn)
@@ -41,7 +41,7 @@ graph_sample = function(gr_current, kshat, n, cn, beta) {
     
     
     samplep[m] = -sum(ks_temp$k)*f # log (J(G^{t+1} | J(G^{t})))
-    acceptance[m] = exp(sum( (ks_temp$k - kshat$k) * log(theta)  + ks_temp$S %*% c(1:cntemp,beta_true) - kshat$S %*% c(1:cn,beta_true)) )
+    acceptance[m] = min(1e300,exp(sum( (ks_temp$k - kshat$k) * log(theta)  + ks_temp$S %*% c(1:cntemp,beta_true) - kshat$S %*% c(1:cn,beta_true)) ))
   }
   return(list(samplep=samplep, kdiff = kdiff, acceptance=acceptance, edge_change = neighbors$edge_perturb, added = neighbors$added))
 }

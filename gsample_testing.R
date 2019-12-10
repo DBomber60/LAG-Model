@@ -1,6 +1,7 @@
 source('drivers.R')
 source('graphsample.R')
 source('rewens.R')
+source('graphplot.R')
 library(igraph)
 library(tidyverse)
 library(rlist)
@@ -11,7 +12,7 @@ set.seed(1)
 # PARAMETERS
 n = 20 # items
 nt = 500 # transactions
-gamma <- rnorm(n, -1.5) # graph vertex coefficients
+gamma <- rnorm(n, -2) # graph vertex coefficients
 theta=.2
 
 #################### SAMPLE FROM MODEL/ ESTIMATE GRAPH/ GAMMA #########################
@@ -37,10 +38,11 @@ cn = ghat$cn
 
 
 # keep track of which edges were added/ removed
-changed = list()
+changed2 = list()
 
 
 for (j in 1:200) {
+  print(j)
   # sample graph from chordal neighbors
   nbd = graph_sample(currentg, kshat = kshat, n, cn, beta = beta_true)
   
@@ -48,7 +50,9 @@ for (j in 1:200) {
   datcheck = data.frame(nbd$kdiff, nbd$samplep, nbd$acceptance)
   
   # subtract the median sampling probability to prevent computational underflow
-  sampledg = sample.int(length(nbd$samplep), 1, prob = exp(nbd$samplep - median(nbd$samplep)))
+  probvec = exp(nbd$samplep - median(nbd$samplep))
+  probvec = ifelse(probvec == Inf, 1e300, probvec)
+  sampledg = sample.int(length(nbd$samplep), 1, prob = probvec)
   a = nbd$acceptance[sampledg] # acceptance function
   # if we accept the new sampled graph ...
   if(runif(1) < min(1,a)) {
@@ -70,4 +74,36 @@ for (j in 1:200) {
     kshat = ksupdate
   }
 }
+
+
+############ PLOTTING RESULTS (graphplot.R) #############
+
+
+# read in a list from the graph sampling algorithm that contains: 1) edges that are changed
+# 2) whether added or removed; 3) which iteration the change occured on
+
+# traceG.RData contains the edges changed from a true graph simulated with set.seed(1) 
+# in gsample_testing.R. gamma <- rnorm(n, -2)
+
+#saveRDS(changed, file = "traceG.RData")
+#chgl.1 = readRDS("traceG.12.9.8pm.RData")
+
+# key inputs: true graph/ initial graph estimate
+trueg = g
+initg = ghat$graph
+
+# number of initial false positive/ false negative edges
+fng = difference(trueg, initg) # G - hat(G)
+fpg = difference(initg, trueg) # hat(G) - G
+
+fpfa = gen_fpfa(chgl = chgl.1, fpg, fng)
+matdat = do.call(rbind, chgl.1)
+
+x = matdat[,4]
+y1 = fpfa$fpa # false positive array
+y2 = fpfa$fna # false negative array
+
+graphplot(matdat[,4], y1, y2)
+
+
 
