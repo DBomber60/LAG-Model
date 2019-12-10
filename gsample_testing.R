@@ -12,7 +12,7 @@ set.seed(1)
 # PARAMETERS
 n = 20 # items
 nt = 500 # transactions
-gamma <- rnorm(n, -2) # graph vertex coefficients
+gamma <- rnorm(n, -1) # graph vertex coefficients
 theta=.2
 
 #################### SAMPLE FROM MODEL/ ESTIMATE GRAPH/ GAMMA #########################
@@ -41,7 +41,7 @@ cn = ghat$cn
 changed2 = list()
 
 
-for (j in 1:200) {
+for (j in 1:10) {
   print(j)
   # sample graph from chordal neighbors
   nbd = graph_sample(currentg, kshat = kshat, n, cn, beta = beta_true)
@@ -62,7 +62,7 @@ for (j in 1:200) {
     } else {newg = currentg - E(currentg,nbd$edge_change[[sampledg]])}
     
     # keep track of the changes made
-    changed = list.append(changed, c(nbd$edge_change[[sampledg]], nbd$added[sampledg], j))
+    changed2 = list.append(changed2, c(nbd$edge_change[[sampledg]], nbd$added[sampledg], j))
     
     # update parameters
     ksupdate = sK_update(D = sampled$D, S=kshat$S, k=kshat$k, nbd$edge_change[[sampledg]], 
