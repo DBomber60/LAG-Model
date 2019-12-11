@@ -28,7 +28,7 @@ graph_sample = function(gr_current, kshat, n, cn, beta) {
     added = neighbors$added[m] # binary variable
     edge_change = neighbors$edge_perturb[[m]] # which edge is added/ deleted
     ks_temp = sK_update(D = sampled$D, S=kshat$S, k=kshat$k, edge_change, g = gr_current, added, cn = cn)
-    kdiff[m] = sum(ks_temp$k - kshat$k_est)
+    kdiff[m] = sum(ks_temp$k - kshat$k)
     if(added==1) {gnew=add_edges(gr_current, edge_change)} else {gnew = gr_current - E(gr_current,edge_change)}
     
     # new design matrix
@@ -38,7 +38,6 @@ graph_sample = function(gr_current, kshat, n, cn, beta) {
     # new cn value
     Cl <- lapply(cliques(gnew), as.vector) # quick check: `table(sapply(C, length))`
     cntemp <- max(sapply(Cl, length)) - 1 # clique number of `g` (minus 1)
-    
     
     samplep[m] = -sum(ks_temp$k)*f # log (J(G^{t+1} | J(G^{t})))
     acceptance[m] = min(1e300,exp(sum( (ks_temp$k - kshat$k) * log(theta)  + ks_temp$S %*% c(1:cntemp,beta_true) - kshat$S %*% c(1:cn,beta_true)) ))

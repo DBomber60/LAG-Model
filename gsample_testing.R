@@ -6,6 +6,7 @@ library(igraph)
 library(tidyverse)
 library(rlist)
 
+# try sampling according to the acceptance probability??
 
 # toy example - generate a sample from a small set of items
 # compute likelihood values of neighboring graphs
@@ -13,7 +14,7 @@ set.seed(1)
 # PARAMETERS
 n = 20 # items
 nt = 500 # transactions
-gamma <- rnorm(n, -1.5) # graph vertex coefficients
+gamma <- rnorm(n, -1) # graph vertex coefficients
 theta=.2
 
 #################### SAMPLE FROM MODEL/ ESTIMATE GRAPH/ GAMMA #########################
@@ -42,7 +43,7 @@ cn = ghat$cn
 changed2 = list()
 
 
-for (j in 1:10) {
+for (j in 1:200) {
   print(j)
   # sample graph from chordal neighbors
   nbd = graph_sample(currentg, kshat = kshat, n, cn, beta = beta_true)
@@ -52,7 +53,8 @@ for (j in 1:10) {
   
   # subtract the median sampling probability to prevent computational underflow
   probvec = exp(nbd$samplep - median(nbd$samplep))
-  probvec = ifelse(probvec == Inf, 1e300, probvec)
+  probvec =  ifelse(probvec == Inf, 1e300, probvec)
+  if (j<=100)  probvec = probvec * nbd$added # try only adding
   sampledg = sample.int(length(nbd$samplep), 1, prob = probvec)
   a = nbd$acceptance[sampledg] # acceptance function
   # if we accept the new sampled graph ...
@@ -87,7 +89,10 @@ for (j in 1:10) {
 # in gsample_testing.R. gamma <- rnorm(n, -2)
 
 #saveRDS(changed, file = "traceG.RData")
-chglist = readRDS("data/traceG.12.9.8pm.RData")
+#chglist = readRDS("data/traceG.12.9.8pm.RData")
+
+chgl = changed2
+
 
 # key inputs: true graph/ initial graph estimate
 trueg = g
@@ -97,16 +102,20 @@ initg = ghat$graph
 fng = difference(trueg, initg) # G - hat(G)
 fpg = difference(initg, trueg) # hat(G) - G
 
-fpfa = gen_fpfa(chgl = chgl.1, fpg, fng)
-matdat = do.call(rbind, chgl.1)
+fpfa = gen_fpfa(chgl, fpg, fng)
+matdat = do.call(rbind, chgl)
 
 x = matdat[,4]
 y1 = fpfa$fpa # false positive array
 y2 = fpfa$fna # false negative array
 
-df = data.frame(iter = c(0,x), fpa = y1, fna = y2)
 
-write.csv(df, "gsample.csv")
+graphplot(x, y1, y2)
+
+
+#df = data.frame(iter = c(0,x), fpa = y1, fna = y2)
+
+#write.csv(df, "gsample.csv")
 
 
 

@@ -93,11 +93,11 @@ graphplot = function(iters, fpa, fna) {
   fn1 = stepfun(iters, fpa)
   fn2 = stepfun(iters, fna)
 
-  plot(fn1, xlim = c(1,200), ylim = c(0, 15), frame = F, do.points = F,
+  plot(fn1, xlim = c(1,200), ylim = c(0, 50), frame = F, do.points = F,
        lty = 1, lwd = 4, col = colors[1],
        main = "Graph Trace Plot",
        xlab = "Iteration", ylab = "Edge Count")
-  plot(fn2, add = T, do.points = F, lty = 3, lwd = 4, col = colors[2])
+  plot(fn2, add = T, do.points = T, lty = 3, lwd = 4, col = colors[2])
 
 }
 

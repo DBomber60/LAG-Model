@@ -53,6 +53,24 @@ g1 = ggplot() + geom_step(data = gsample, mapping = aes(x = iter, y = fpa)) +
   geom_step(data = gsample, mapping = aes(x = iter, y = fna)) + theme_bw() + 
   ggtitle("Graph Trace Plot")
 
+dec1 = rbinom(200,1,.3)
+
+dat1 = array(NA, dim = c(201,1))
+dat1[1] = 31
+
+for(p in 1:200) {
+  decrement = ifelse( dat1[p] - dec1[p] >= 0 , dat1[p] - dec1[p],  dat1[p] + dec1[p])
+  dat1[p+1] = decrement
+}
+
+
+
+
+#fn = cumsum(c(31, ifelse(dec1>0,1,-1)))
+
+g2 = ggplot() + geom_step(data = gsample, mapping = aes(x = iter, y = fpa)) + 
+  geom_step(data = gsample, mapping = aes(x = iter, y = fna)) + theme_bw() + 
+  ggtitle("Graph Trace Plot")
 
 
 g=arrangeGrob(p11,p12,g1, p21, p22, g1, nrow=2, ncol=3)
