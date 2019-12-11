@@ -12,9 +12,9 @@ library(rlist)
 # compute likelihood values of neighboring graphs
 set.seed(1)
 # PARAMETERS
-n = 20 # items
+n = 30 # items
 nt = 500 # transactions
-gamma <- rnorm(n, -1) # graph vertex coefficients
+gamma <- rnorm(n, -2) # graph vertex coefficients
 theta=.2
 
 #################### SAMPLE FROM MODEL/ ESTIMATE GRAPH/ GAMMA #########################
@@ -54,7 +54,7 @@ for (j in 1:200) {
   # subtract the median sampling probability to prevent computational underflow
   probvec = exp(nbd$samplep - median(nbd$samplep))
   probvec =  ifelse(probvec == Inf, 1e300, probvec)
-  if (j<=100)  probvec = probvec * nbd$added # try only adding
+  #if (j<=100)  probvec = probvec * nbd$added # try only adding
   sampledg = sample.int(length(nbd$samplep), 1, prob = probvec)
   a = nbd$acceptance[sampledg] # acceptance function
   # if we accept the new sampled graph ...
