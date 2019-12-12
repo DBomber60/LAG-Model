@@ -44,19 +44,3 @@ graph_sample = function(gr_current, kshat, n, cn, beta) {
   }
   return(list(samplep=samplep, kdiff = kdiff, acceptance=acceptance, edge_change = neighbors$edge_perturb, added = neighbors$added))
 }
-
-
-
-# testing
-a = c(-10, -20, -30)
-k = 2
-b = exp(a) /sum( exp(a) )
-c = exp(a/k) / sum( exp(a/k) )
-df = data.frame(a, b, c)
-
-j = a + 10
-df$j = exp(j) / sum( exp(j) )
-
-# compute exp(-1000)
-expm1(1e-10)
-
