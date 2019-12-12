@@ -31,7 +31,7 @@ sampled = lag_sample(G=g, C=C, cn=cn, nt=nt, theta=theta, gamma = gamma, beta = 
 
 # estimate initial graph
 M = t(sampled$D) %*% sampled$D
-ghat = g_estimate(sampled$D, M=M, nt = nt)
+ghat = g_estimate(sampled$D, M=M, nt = nt, pval = .001)
 kshat = kestimate(ghat$graph, sampled$D, cn = ghat$cn)
 
 # graph sampling procedure
@@ -88,8 +88,8 @@ for (j in 1:200) {
 # traceG.RData contains the edges changed from a true graph simulated with set.seed(1) 
 # in gsample_testing.R. gamma <- rnorm(n, -2)
 
-#saveRDS(changed, file = "traceG.RData")
-#chglist = readRDS("data/traceG.12.9.8pm.RData")
+saveRDS(changed2, file = "traceG.12.12(hip).RData")
+chglist = readRDS("data/traceG.12.12(hip).RData")
 
 chgl = changed2
 
